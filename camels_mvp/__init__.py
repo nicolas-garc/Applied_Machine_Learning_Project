@@ -1,0 +1,2 @@
+"""Minimal CAMELS MVP package."""
+
