@@ -1,331 +1,355 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Explicable Universe: Using CNNs to Map Universes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #06090f;
+      --bg2: #0c1220;
+      --bg3: #111827;
+      --accent: #4f8ef7;
+      --accent2: #a78bfa;
+      --gold: #f0c060;
+      --text: #e8eaf0;
+      --muted: #8a93a8;
+      --border: rgba(79,142,247,0.18);
+      --mono: 'IBM Plex Mono', monospace;
+      --serif: 'Source Serif 4', Georgia, serif;
+      --display: 'Playfair Display', Georgia, serif;
+    }
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<link rel="shortcut icon" href="images/icon.ico">
-<style type="text/css">
-	body {
-		background-color: #f5f9ff;
-	}
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--serif);
+      font-size: 18px;
+      line-height: 1.75;
+    }
 
-	/* Hide both math displays initially, will display based on JS detection */
-  .mathjax-mobile, .mathml-non-mobile { display: none; }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 15% 20%, rgba(255,255,255,0.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 32% 55%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 60% 10%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 75% 40%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 88% 70%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 45% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 93% 15%, rgba(255,255,255,0.6) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
 
-  /* Show the MathML content by default on non-mobile devices */
-  .show-mathml .mathml-non-mobile { display: block; }
-  .show-mathjax .mathjax-mobile { display: block; }
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 80px 24px 60px;
+    }
 
-	.content-margin-container {
-		display: flex;
-		width: 100%; /* Ensure the container is full width */
-		justify-content: left; /* Horizontally centers the children in the container */
-		align-items: center;  /* Vertically centers the children in the container */
-	}
-	.main-content-block {
-		width: 70%; /* Change this percentage as needed */
-    max-width: 1100px; /* Optional: Maximum width */
-		background-color: #fff;
-		border-left: 1px solid #DDD;
-		border-right: 1px solid #DDD;
-		padding: 8px 8px 8px 8px;
-		font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;#"Avenir";
-	}
-	.margin-left-block {
-			font-size: 14px;
-			width: 15%; /* Change this percentage as needed */
-			max-width: 130px; /* Optional: Maximum width */
-			position: relative;
-			margin-left: 10px;
-			text-align: left;
-			font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;#"Avenir";
-			padding: 5px;
-	}
-	.margin-right-block {
-			font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;#"Avenir";
-			font-size: 14px;
-			width: 25%; /* Change this percentage as needed */
-			max-width: 256px; /* Optional: Maximum width */
-			position: relative;
-			text-align: left;
-			padding: 10px;  /* Optional: Adds padding inside the caption */
-	}
+    .hero-glow {
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(79,142,247,0.12) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
 
-	img {
-			max-width: 100%; /* Make sure it fits inside the container */
-			height: auto;
-			display: block;
-			margin: auto;
-	}
-	.my-video {
-			max-width: 100%; /* Make sure it fits inside the container */
-			height: auto;
-			display: block;
-			margin: auto;
-	}
-	/* Hide both video displays initially, will display based on JS detection */
-  .vid-mobile, .vid-non-mobile { display: none; }
+    .hero-tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid var(--border);
+      padding: 6px 16px;
+      border-radius: 20px;
+      margin-bottom: 32px;
+      background: rgba(79,142,247,0.06);
+    }
 
-  /* Show the video content by default on non-mobile devices */
-  .show-vid-mobile .vid-mobile { display: block; }
-  .show-vid-non-mobile .vid-non-mobile { display: block; }
+    .hero h1 {
+      font-family: var(--display);
+      font-size: clamp(2.4rem, 6vw, 4.8rem);
+      font-weight: 700;
+      line-height: 1.12;
+      max-width: 820px;
+      margin-bottom: 24px;
+      background: linear-gradient(135deg, #ffffff 30%, var(--accent) 70%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
 
-	a:link,a:visited
-	{
-		color: #0e7862; /*#1367a7;*/
-		text-decoration: none;
-	}
-	a:hover {
-		color: #24b597; /*#208799;*/
-	}
+    .hero-subtitle {
+      font-size: 1.2rem;
+      color: var(--muted);
+      max-width: 600px;
+      margin-bottom: 40px;
+      font-style: italic;
+    }
 
-	h1 {
-		font-size: 18px;
-		margin-top: 4px;
-		margin-bottom: 10px;
-	}
+    .authors {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
 
-	table.header {
-    font-weight: 300;
-    font-size: 17px;
-    flex-grow: 1;
-		width: 70%;
-    max-width: calc(100% - 290px); /* Adjust according to the width of .paper-code-tab */
-	}
-	table td, table td * {
-	    vertical-align: middle;
-	    position: relative;
-	}
-	table.paper-code-tab {
-	    flex-shrink: 0;
-	    margin-left: 8px;
-	    margin-top: 8px;
-	    padding: 0px 0px 0px 8px;
-	    width: 290px;
-	    height: 150px;
-	}
+    .author-chip {
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 5px 14px;
+      border-radius: 4px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+    }
 
-	.layered-paper { /* modified from: http://css-tricks.com/snippets/css/layered-paper/ */
-		box-shadow:
-		        0px 0px 1px 1px rgba(0,0,0,0.35), /* The top layer shadow */
-		        5px 5px 0 0px #fff, /* The second layer */
-		        5px 5px 1px 1px rgba(0,0,0,0.35), /* The second layer shadow */
-		        10px 10px 0 0px #fff, /* The third layer */
-		        10px 10px 1px 1px rgba(0,0,0,0.35); /* The third layer shadow */
-		margin-top: 5px;
-		margin-left: 10px;
-		margin-right: 30px;
-		margin-bottom: 5px;
-	}
+    .course-tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
 
-	hr {
-    height: 1px; /* Sets the height of the line to 1 pixel */
-    border: none; /* Removes the default border */
-    background-color: #DDD; /* Sets the line color to black */
-  }
+    .content {
+      position: relative;
+      z-index: 1;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 24px 120px;
+    }
 
-	div.hypothesis {
-		width: 80%;
-		background-color: #EEE;
-		border: 1px solid black;
-		border-radius: 10px;
-		-moz-border-radius: 10px;
-		-webkit-border-radius: 10px;
-		font-family: Courier;
-		font-size: 18px;
-		text-align: center;
-		margin: auto;
-		padding: 16px 16px 16px 16px;
-	}
+    .section-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-	div.citation {
-    font-size: 0.8em;
-    background-color:#fff;
-    padding: 10px;
-		height: 200px;
-  }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
 
-	.fade-in-inline {
-		position: absolute;
-		text-align: center;
-		margin: auto;
-		-webkit-mask-image: linear-gradient(to right,
-																			transparent 0%,
-																			transparent 40%,
-																			black 50%,
-																			black 90%,
-																			transparent 100%);
-		mask-image: linear-gradient(to right,
-																transparent 0%,
-																transparent 40%,
-																black 50%,
-																black 90%,
-																transparent 100%);
-		-webkit-mask-size: 8000% 100%;
-		mask-size: 8000% 100%;
-		animation-name: sweepMask;
-		animation-duration: 4s;
-		animation-iteration-count: infinite;
-		animation-timing-function: linear;
-		animation-delay: -1s;
-	}
+    h2 {
+      font-family: var(--display);
+      font-size: clamp(1.7rem, 3vw, 2.4rem);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 24px;
+      color: #fff;
+    }
 
-	.fade-in2-inline {
-			animation-delay: 1s;
-	}
+    h3 {
+      font-family: var(--display);
+      font-size: 1.3rem;
+      font-weight: 400;
+      font-style: italic;
+      color: var(--gold);
+      margin: 40px 0 14px;
+    }
 
-	.inline-div {
-			position: relative;
-	    display: inline-block; /* Makes both the div and paragraph inline-block elements */
-	    vertical-align: top; /* Aligns them at the top, you can adjust this to middle, bottom, etc., based on your needs */
-	    width: 50px; /* Optional: Adds space between the div and the paragraph */
-	}
+    p {
+      color: #c8cdd8;
+      margin-bottom: 20px;
+      font-size: 1.02rem;
+    }
 
-</style>
+    strong {
+      color: #e8eaf0;
+      font-weight: 600;
+    }
 
-	  <title>The Platonic Representation Hypothesis</title>
-      <meta property="og:title" content="The Platonic Representation Hypothesis" />
-			<meta charset="UTF-8">
-  </head>
+    em {
+      color: #d8dce8;
+    }
 
-  <body>
+    .callout {
+      background: linear-gradient(135deg, rgba(79,142,247,0.07), rgba(167,139,250,0.05));
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 24px 28px;
+      margin: 32px 0;
+    }
 
-		<div class="content-margin-container">
-				<div class="margin-left-block">
-				</div>
-		    <div class="main-content-block">
-						<table class="header" align=left>
-								<tr>
-									<td colspan=4>
-										<span style="font-size: 32px; font-family: 'Courier New', Courier, monospace; /* Adds fallbacks */">A Grand Unified Theory of Deep Learning</span>
-									</td>
-								</tr>
-								<tr>
-										<td align=left>
-												<span style="font-size:17px"><a href="your_website">Your name</a></span>
-										</td>
-										<td align=left>
-												<span style="font-size:17px"><a href="your_partner's_website">Your partner's name</a></span>
-										</td>
-								<tr>
-									<td colspan=4 align=left><span style="font-size:18px">Final project for 6.7960, MIT</span></td>
-								</tr>
-						</table>
-					</div>
-					<div class="margin-right-block">
-					</div>
-		</div>
+    .callout p { margin: 0; font-style: italic; color: #d0d6e8; font-size: 1.05rem; }
 
-		<div class="content-margin-container" id="intro">
-				<div class="margin-left-block">
-          <!-- table of contents here -->
-          <div style="position:fixed; max-width:inherit; top:max(20%,120px)">
-              <b style="font-size:16px">Outline</b><br><br>
-              <a href="#intro">Introduction</a><br><br>
-              <a href="#does_x_do_y">Does X do Y?</a><br><br>
-              <a href="#implications_and_limitations">Implications and limitations</a><br><br>
-          </div>
-				</div>
-		    <div class="main-content-block">
-            <!--You can embed an image like this:-->
-            <img src="./images/your_image_here.png" width=512px/>
-		    </div>
-		    <div class="margin-right-block">
-						Caption for the image.
-		    </div>
-		</div>
+    .ref {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(79,142,247,0.3);
+    }
 
-    <div class="content-margin-container" id="intro">
-				<div class="margin-left-block">
-				</div>
-		    <div class="main-content-block">
-						<h1>Introduction</h1>
-            Motivate your project. What question are you asking. Why is it unanswered so far? What gap in the literature or practice are you filling?
-            Why is it important?
-		    </div>
-		    <div class="margin-right-block">
-						Margin note that clarifies some detail #main-content-block for intro section.
-		    </div>
-		</div>
+    .ref:hover { color: var(--accent2); }
 
-		<div class="content-margin-container" id="does_x_do_y">
-				<div class="margin-left-block">
-				</div>
-		    <div class="main-content-block">
-					<h1>Does X do Y?</h1>
-				  It is well known that Y does Y. And this has raised the question does X do Y? Because if Y does Y then it stands to reason that X does Y.
-          But we cannot answer this until we realize the Z implies Y and X can be linked to Z.<br><br>
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 40px 24px;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
 
-          Now let's write some math!<br>
-          <center>
-            <math xmlns="http://www.w3.org/1998/Math/MathML">
-              <mrow>
-                <mrow>
-                  <mo>&#x2202;</mo>
-                  <mi>y</mi>
-                </mrow>
-                <mo>/</mo>
-                <mrow>
-                  <mo>&#x2202;</mo>
-                  <mi>x</mi>
-                </mrow>
-              </mrow>
-              <mo>=</mo>
-              <mi>x</mi>
-            </math>
-          </center>
-          <br>
-          It's probably best to ask an LLM to help do the web
-          formatting for math. You can tell it "convert this latex equation into MathML: $$\frac{\partial dy}{\partial dx} = x$$"
-          But it took me a few tries. So, if you get frustrated, you can embed an image of the equation, or use other packages for
-          rendering equations on webpages.
-		    </div>
-		    <div class="margin-right-block" style="transform: translate(0%, -100%);"> <!-- you can move the margin notes up and down with translate -->
-          Interestingly, Plato also asked if X does Y, in <a href="#ref_1">[1]</a>.
-		    </div>
-		</div>
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .hero > * { animation: fadeUp 0.7s ease both; }
+    .hero > *:nth-child(1) { animation-delay: 0.1s; }
+    .hero > *:nth-child(2) { animation-delay: 0.25s; }
+    .hero > *:nth-child(3) { animation-delay: 0.4s; }
+    .hero > *:nth-child(4) { animation-delay: 0.5s; }
+    .hero > *:nth-child(5) { animation-delay: 0.6s; }
+  </style>
+</head>
+<body>
 
-		<div class="content-margin-container">
-				<div class="margin-left-block">
-				</div>
-		    <div class="main-content-block">
-            <h1>Another section</h1>
-            In this section we embed a video:
-						<video class='my-video' loop autoplay muted style="width: 725px">
-								<source src="./images/mtsh.mp4" type="video/mp4">
-						</video>
-		    </div>
-		    <div class="margin-right-block">
-					A caption for the video could go here.
-		    </div>
-		</div>
+<header class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-tag">STATUN3106 · Applied Machine Learning · Columbia University</div>
+  <h1>The Explicable Universe:<br/>Using CNNs to Map Universes</h1>
+  <p class="hero-subtitle">
+    Can deep learning models both approximate expensive hydrodynamical simulations from dark-matter-only simulations and reveal how much information (and what kind) is actually needed to represent different cosmological fields?
+  </p>
+  <div class="authors">
+    <span class="author-chip">Nicolas Garcia · ng2890</span>
+    <span class="author-chip">Mark Hrytchak · mh4605</span>
+    <span class="author-chip">Jose Pablo Castelazo · jc5943</span>
+    <span class="author-chip">Ena Selman Housein · es3923</span>
+  </div>
+  <div class="course-tag">Spring 2026</div>
+</header>
 
-		<div class="content-margin-container" id="implications_and_limitations">
-				<div class="margin-left-block">
-				</div>
-		    <div class="main-content-block">
-						<h1>Implications and limitations</h1>
-						Let's end with some discussion of the implications and limitations.
-		    </div>
-		    <div class="margin-right-block">
-		    </div>
-		</div>
+<main class="content">
+  <section>
+    <div class="section-label">Background</div>
+    <h2>Background &amp; Motivation</h2>
 
-		<div class="content-margin-container" id="citations">
-				<div class="margin-left-block">
-				</div>
-		    <div class="main-content-block">
-						<div class='citation' id="references" style="height:auto"><br>
-							<span style="font-size:16px">References:</span><br><br>
-							<a id="ref_1"></a>[1] <a href="https://en.wikipedia.org/wiki/Allegory_of_the_cave">Allegory of the Cave</a>, Plato, c. 375 BC<br><br>
-							<a id="ref_2"></a>[2] <a href="">A Human-Level AGI</a>, OpenAI, 2025<br><br>
-						</div>
-		    </div>
-		    <div class="margin-right-block">
-            <!-- margin notes for reference block here -->
-		    </div>
-		</div>
+    <p>
+      Imagine you want to understand the full picture of a city: the traffic, noise levels, air
+      quality, and how heat pools around skyscrapers. One way to do this is to model everything at
+      once — every car, every building, every air molecule — giving you a rich, accurate picture.
+      But this also takes a massive amount of time and computation.
+    </p>
 
-	</body>
+    <p>
+      Cosmologists face a very similar tradeoff. To simulate how the universe evolves, they rely on
+      two types of simulations. The cheaper version — <strong>N-body</strong> or dark-matter-only
+      simulations — models how gravity pulls dark matter together over time. These are fast and
+      scalable. The more realistic version — <strong>hydrodynamical simulations</strong> — includes
+      gas physics, star formation, and feedback from black holes. These capture observable structure,
+      but are extremely expensive to run.
+    </p>
 
+    <p>
+      This project focuses on the gap between these two approaches.
+    </p>
+
+    <div class="callout">
+      <p>
+        Research Question: Can deep learning models both approximate expensive hydrodynamical
+        simulations from dark-matter-only simulations and reveal how much information (and what
+        kind) is actually needed to represent different cosmological fields?
+      </p>
+    </div>
+
+    <h3>Prior Work</h3>
+
+    <p>
+      There is a growing body of work using machine learning to accelerate cosmological simulations.
+      In general, these approaches try to use neural networks to either reproduce simulation outputs
+      or extract physical parameters from them.
+    </p>
+
+    <p>
+      A common direction is using CNNs to learn mappings between different representations of the
+      universe, including recovering cosmological parameters directly from simulation maps
+      <a class="ref" href="https://arxiv.org/abs/2109.10360" target="_blank">[Villaescusa-Navarro et al., 2021]</a>.
+      Other work focuses on approximating expensive simulations by learning from cheaper ones, for
+      example through multifidelity approaches that combine N-body and hydrodynamical data
+      <a class="ref" href="https://arxiv.org/abs/2505.21215" target="_blank">[Saoulis et al., 2025]</a>.
+    </p>
+
+    <p>
+      Rather than focusing on a single observable or prediction task, we frame the problem as a
+      full <strong>image-to-image translation</strong>: given a dark-matter-only map, predict the
+      corresponding hydrodynamical map. This lets us study not just whether the prediction works,
+      but what information the model relies on.
+    </p>
+
+    <p>
+      The part of our approach that is most directly grounded in prior work is the
+      <strong>Information Ordered Bottleneck (IOB)</strong>
+      <a class="ref" href="https://arxiv.org/abs/2305.11213" target="_blank">[Ho, Zhao &amp; Wandelt, 2023]</a>.
+      The IOB compresses data into a latent space where dimensions are explicitly ranked by how
+      much they contribute to reconstruction quality. By varying the size of this bottleneck, we
+      can estimate the intrinsic dimensionality of each field — the minimum number of features
+      needed to represent it — in a way that extends beyond what linear methods like PCA can
+      capture in nonlinear settings.
+    </p>
+
+  </section>
+</main>
+
+<section style="position:relative; z-index:1; max-width:780px; margin:0 auto; padding:0 24px 80px;">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:#4f8ef7; margin-bottom:12px; display:flex; align-items:center; gap:10px;">
+      Citations
+      <span style="flex:1; height:1px; background:rgba(79,142,247,0.18); display:block;"></span>
+    </div>
+    <h2 style="font-family:'Playfair Display',Georgia,serif; font-size:clamp(1.7rem,3vw,2.4rem); font-weight:700; margin-bottom:24px; color:#fff;">References</h2>
+    <ol style="padding-left:20px; color:#8a93a8; font-family:'IBM Plex Mono',monospace; font-size:0.82rem; line-height:2.2;">
+      <li style="margin-bottom:8px;">
+        Villaescusa-Navarro, F. et al. (2021). <em>The CAMELS project: Cosmology and Astrophysics with MachinE Learning Simulations.</em>
+        <a class="ref" href="https://arxiv.org/abs/2109.10360" target="_blank">arXiv:2109.10360</a>
+      </li>
+      <li style="margin-bottom:8px;">
+        Saoulis, A. A. et al. (2025). <em>Transfer learning for multifidelity simulation-based inference in cosmology.</em>
+        <a class="ref" href="https://arxiv.org/abs/2505.21215" target="_blank">arXiv:2505.21215</a>
+      </li>
+      <li style="margin-bottom:8px;">
+        Ho, M., Zhao, X. &amp; Wandelt, B. (2023). <em>Information-Ordered Bottlenecks for Adaptive Semantic Compression.</em>
+        <a class="ref" href="https://arxiv.org/abs/2305.11213" target="_blank">arXiv:2305.11213</a>
+      </li>
+      <li style="margin-bottom:8px;">
+        Villaescusa-Navarro, F. et al. (2022). <em>The CAMELS Multifield Dataset: Learning the Universe's Fundamental Parameters with Artificial Intelligence.</em>
+        <a class="ref" href="https://camels.readthedocs.io/en/latest/CMD.html" target="_blank">camels.readthedocs.io/CMD</a>
+      </li>
+    </ol>
+  </section>
+
+<footer>
+  The Explicable Universe · STATUN3106 Applied Machine Learning · Columbia University · Spring 2026
+</footer>
+
+</body>
 </html>
