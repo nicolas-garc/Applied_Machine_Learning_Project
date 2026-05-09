@@ -1,6 +1,0 @@
-.venv/
-artifacts/
-data/
-__pycache__/
-.DS_Store
-tools/
